@@ -58,7 +58,7 @@ class _Router {
             //
             
         }else{
-            echo "Generation 2 Framework version 2.0";
+            echo "Generation 2 Framework version  2.0";
         }
     }
 
