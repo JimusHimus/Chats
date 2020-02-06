@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Content-type: text/plain";
+echo "Content-type: text/plain\r";
 echo '';
 chmod -R 755 /var/www/domains/m.chats.qzo.su
 cd /var/www/domains/m.chats.qzo.su/ || exit > /dev/null
