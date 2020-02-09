@@ -1,56 +1,56 @@
 <?php
- 
-class _AutoInclude {
 
-    function autoload () {
+	class _AutoInclude {
 
-    	$list_forbidden_dir = array('widgets', 'labels');
+		function autoload() {
 
-	    $list_dir = array_values(array_diff(scandir(ROOT . '/app/'), array('..', '.', '.DS_Store')));
+			$list_forbidden_dir = array('widgets', 'labels');
 
-        foreach ($list_dir as $key => $value) {
+			$list_dir = array_values(array_diff(scandir(ROOT . '/app/'), array('..', '.', '.DS_Store')));
 
-        	if(is_dir(ROOT . '/app/' . $value)){
+			foreach ($list_dir as $key => $value) {
 
-        		if( !in_array($value, $list_forbidden_dir) ){
-        		
-	        		$list_dir_ch = array_values(array_diff(scandir(ROOT . '/app/' . $value), array('..', '.', '.DS_Store')));
+				if (is_dir(ROOT . '/app/' . $value)) {
 
-	        		foreach ($list_dir_ch as $dir) {
+					if (!in_array($value, $list_forbidden_dir)) {
 
-	        			$path = ROOT . '/app/' . $value . '/' . $dir;
+						$list_dir_ch = array_values(array_diff(scandir(ROOT . '/app/' . $value), array('..', '.', '.DS_Store')));
 
-	        			if(is_file($path)){
-	        				  require_once $path;
-	        			}
+						foreach ($list_dir_ch as $dir) {
 
-	        			if(is_dir($path)){
+							$path = ROOT . '/app/' . $value . '/' . $dir;
 
-	        				if( !in_array($value, $list_forbidden_dir) ){
+							if (is_file($path)) {
+								require_once $path;
+							}
 
-			    				$list_dir_bootom = array_values(array_diff(scandir(ROOT . '/app/' . $value . '/' . $dir), array('..', '.', '.DS_Store')));
+							if (is_dir($path)) {
 
-			    				foreach ($list_dir_bootom as $file) {
+								if (!in_array($value, $list_forbidden_dir)) {
 
-			    					$path = ROOT . '/app/' . $value . '/' . $dir . '/' . $file;
+									$list_dir_bootom = array_values(array_diff(scandir(ROOT . '/app/' . $value . '/' . $dir), array('..', '.', '.DS_Store')));
 
-			    					if(is_file($path)){
-			    						require_once $path;
-			    					}
-			    				}
-			    			}
+									foreach ($list_dir_bootom as $file) {
 
-	        			}
-	        		}
-	        	}
-        		
-        	}
+										$path = ROOT . '/app/' . $value . '/' . $dir . '/' . $file;
 
-        }
+										if (is_file($path)) {
+											require_once $path;
+										}
+									}
+								}
 
-    }
+							}
+						}
+					}
+
+				}
+
+			}
+
+		}
 
 
-}
+	}
 
 ?>

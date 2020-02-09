@@ -1,581 +1,565 @@
 <?php
- 
-class _MainModel extends DB{
 
-     //GET and POST params url
-    public static $params_url = [];
+	class _MainModel extends DB {
 
-    public static $query;
+		//GET and POST params url
+		public static $params_url = [];
 
-    private static $select = false;
+		public static $query;
 
-    private static $delete = false;
+		private static $select = false;
 
-    private static $table;
+		private static $delete = false;
 
-    //where
-    private static $field = array();
+		private static $table;
 
-    private static $filter = array();
+		//where
+		private static $field = array();
 
-    //sort
-    private static $sort_field = '';
+		private static $filter = array();
 
-    private static $sort_type = '';
+		//sort
+		private static $sort_field = '';
 
-    //pagination
-    private static $count_element = null;
+		private static $sort_type = '';
 
-    private static $number_page = null;
+		//pagination
+		private static $count_element = null;
 
-    //add
-    private static $array_field_add = array();
+		private static $number_page = null;
 
-    //edit
-    private static $array_field_edit = array();
+		//add
+		private static $array_field_add = array();
 
-    private static $array_where = array();
+		//edit
+		private static $array_field_edit = array();
 
-    //delete
-    private static $array_field_delete = array();
+		private static $array_where = array();
 
-    //like
-    private static $array_like = array();
+		//delete
+		private static $array_field_delete = array();
 
+		//like
+		private static $array_like = array();
 
-    function __construct () {
 
-        $this->connect();
-        $this->setParams();
-    }
+		function __construct() {
 
-    public static function viewJSON($json = null) {
+			$this->connect();
+			$this->setParams();
+		}
 
-        if(!is_null($json)){
+		public static function viewJSON($json = null) {
 
-            if(is_array($json)){
-                $result = ["result" => self::siezeJsonToArray($json)];
-                //array_push($result, array('result' => $this->siezeJsonToArray($json)));
+			if (!is_null($json)) {
 
-            }else{
+				if (is_array($json)) {
+					$result = ["result" => self::siezeJsonToArray($json)];
+					//array_push($result, array('result' => $this->siezeJsonToArray($json)));
 
-                $result = ["result" => $json];
+				} else {
 
-            }
+					$result = ["result" => $json];
 
-            if(!self::isMobile()){
-                
-                header('Content-type:application/json;charset=utf-8');
-                echo json_encode($result, JSON_UNESCAPED_UNICODE);
-            }
-            else {
+				}
 
-                if(!empty($_GET['callback'])){
+				if (!self::isMobile()) {
 
-                    header('Content-Type: application/javascript');
-                    echo $_GET['callback'] . ' (' . json_encode($result, JSON_UNESCAPED_UNICODE) . ');';
+					header('Content-type:application/json;charset=utf-8');
+					echo json_encode($result, JSON_UNESCAPED_UNICODE);
+				} else {
 
-                }
-                else{
-                    echo "Error! Not callback !";
-                }
-            }
-        }
-        else{
-            echo ("Empty data for view json");
-        }
+					if (!empty($_GET['callback'])) {
 
-    }
+						header('Content-Type: application/javascript');
+						echo $_GET['callback'] . ' (' . json_encode($result, JSON_UNESCAPED_UNICODE) . ');';
 
-    function view ($path, $data = []) {
+					} else {
+						echo "Error! Not callback !";
+					}
+				}
+			} else {
+				echo("Empty data for view json");
+			}
 
-        if (is_array($data))
-            extract($data);
+		}
 
-        require(ROOT . '/frontend/layouts/' . $path . '.php');
+		function view($path, $data = []) {
 
-    }
+			if (is_array($data))
+				extract($data);
 
-    public static function table($table){
+			require(ROOT . '/frontend/layouts/' . $path . '.php');
 
-        self::$table = $table;
+		}
 
-        return new self;
-    }
-
-    public static function get($field = null){
-        
-        self::$select = true;
-
-        if($field != null){
-
-            if(is_array($field)){
-
-
-                if( count($field) > 0){
-                    
-                    self::$field = $field;
-                    self::$query = "SELECT ";
-                    //цикл
-                    foreach (self::$field as $k => $v) {
-                        if( $k + 1 == count(self::$field) ) {
-                            self::$query .= $v;
-                        }else{
-                            self::$query .= $v . ", ";
-                        }
-                    }
-                    self::$query .= " FROM " . self::$table;
-                }
-                else{
-                    self::$query = "SELECT * FROM " . self::$table;
-                }
-            }
-            else{
-                echo "ERROR! invalid parameter type in function Model get()";
-                die();
-            }
-        }else{
-            self::$query = "SELECT * FROM " . self::$table;
-        }
-
-        return new self;
-    }
-
-    public function sort($field, $type){
-
-        if(!empty($field) && !empty($type)){
-
-            self::$sort_field = $field;
-            self::$sort_type = $type;
-
-            if($type == "desc"){
-
-                self::$query .= " ORDER BY $field DESC";
-
-            }else if($type == 'asc'){
-
-                self::$query .= " ORDER BY $field ASC";
-
-            }else{
-                
-                echo "ERROR! ->sort() type is not found $type";
-                die();
-
-            }
-        }
+		public static function table($table) {
 
-        return new self;
-    }
-
-    public static function filter($array = null){
-
-        if(is_array($array)){
-            if( count($array) > 0 ){
-                self::$filter = $array;
-
-                self::$query .= " WHERE ";
+			self::$table = $table;
 
-                $count = 0;
-                foreach (self::$filter as $k => $v) {
-                    if( $count + 1 == count(self::$filter) ) {
-                         self::$query .= $k . "= :filter_".$k." ";
-                    }else{
-                         self::$query .= $k . "= :filter_".$k ." AND ";
-                    }
-                    $count += 1;
-                }
-            }
-            else{
-                echo "ERROR! ->filter() params count array " . count($array);
-                die();
-            }  
-        }
-        else{
-            echo "ERROR! ->filter() invalid parameter ";
-            die();
-        }
-
-        return new self;
-    }
-
-    public static function search($array){
+			return new self;
+		}
 
-        if( count($array) > 0 ){
+		public static function get($field = null) {
 
-            self::$array_like = $array;
+			self::$select = true;
 
-            if( count(self::$filter) == 0){
-                self::$query .= " WHERE ";
-            }else{
-                self::$query .= " AND ";
-            }
-            
-            $count = 0;
-            foreach (self::$array_like as $k => $v) {
+			if ($field != null) {
 
-                if( $count + 1 == count(self::$array_like) ) {
-                     self::$query .= $k . " LIKE :field_like_". $k . " ";
-                }else{
-                     self::$query .= $k . " LIKE :field_like_".$k ."  AND ";
-                }
-                $count += 1;
-            }
-        }
-        else{
+				if (is_array($field)) {
 
-            echo "ERROR! ->search() params count array " . count($filter);
-            die();
 
-        }
+					if (count($field) > 0) {
 
-        return new self;
-    }
+						self::$field = $field;
+						self::$query = "SELECT ";
+						//цикл
+						foreach (self::$field as $k => $v) {
+							if ($k + 1 == count(self::$field)) {
+								self::$query .= $v;
+							} else {
+								self::$query .= $v . ", ";
+							}
+						}
+						self::$query .= " FROM " . self::$table;
+					} else {
+						self::$query = "SELECT * FROM " . self::$table;
+					}
+				} else {
+					echo "ERROR! invalid parameter type in function Model get()";
+					die();
+				}
+			} else {
+				self::$query = "SELECT * FROM " . self::$table;
+			}
 
-    public static function pagination($number_page = null, $count_element = null){
-        
-        if( !is_null($number_page) && !is_null($count_element) && is_int($number_page) && is_int($count_element) ){
+			return new self;
+		}
 
-            self::$number_page = $number_page;
-            self::$count_element = $count_element;
-            self::$query .= " LIMIT :number_page, :count_element ";
+		public function sort($field, $type) {
 
-        }
-        else{
-            echo "ERROR! ->pagination() invalid arguments!";
-            die();
-        }
+			if (!empty($field) && !empty($type)) {
 
-        return new self;
-    }
+				self::$sort_field = $field;
+				self::$sort_type = $type;
 
-    public static function edit($array_field = null, $array_where = null){
+				if ($type == "desc") {
 
-        if( !is_null($array_field) && !is_null($array_where) && is_array($array_field) && is_array($array_where) ){
+					self::$query .= " ORDER BY $field DESC";
 
-            if(count($array_field) > 0 && count($array_where) > 0){
+				} else if ($type == 'asc') {
 
-                self::$array_where = $array_where;
-                self::$array_field_edit = $array_field;
-                self::$query = "UPDATE " . self::$table . " SET ";
+					self::$query .= " ORDER BY $field ASC";
 
-                $count = 0;
+				} else {
 
-                foreach (self::$array_field_edit as $k => $v) {
+					echo "ERROR! ->sort() type is not found $type";
+					die();
 
-                    if( $count + 1 == count(self::$array_field_edit) ) {
-                         self::$query .= $k . " = :field_edit_" . $k . " ";
-                    }
-                    else{
-                         self::$query .= $k . " = :field_edit_". $k . ", ";
-                    }
+				}
+			}
 
-                    $count += 1;
-                }
+			return new self;
+		}
 
-                self::$query .= " WHERE ";
+		public static function filter($array = null) {
 
-                $count = 0;
+			if (is_array($array)) {
+				if (count($array) > 0) {
+					self::$filter = $array;
 
-                foreach (self::$array_where as $k => $v) {
+					self::$query .= " WHERE ";
 
-                    if( $count + 1 == count(self::$array_where) ) {
-                        self::$query .= $k . " = :field_where_". $k . " ";
-                    }
-                    else{
-                        self::$query .= $k . " = :field_where_". $k . " AND ";
-                    }
+					$count = 0;
+					foreach (self::$filter as $k => $v) {
+						if ($count + 1 == count(self::$filter)) {
+							self::$query .= $k . "= :filter_" . $k . " ";
+						} else {
+							self::$query .= $k . "= :filter_" . $k . " AND ";
+						}
+						$count += 1;
+					}
+				} else {
+					echo "ERROR! ->filter() params count array " . count($array);
+					die();
+				}
+			} else {
+				echo "ERROR! ->filter() invalid parameter ";
+				die();
+			}
 
-                    $count += 1;
-                }
-            }
-        }else{
-            echo "ERROR! ->edit() invalid arguments!";
-            die();
-        }
+			return new self;
+		}
 
-        return new self;
-    }
+		public static function search($array) {
 
-    public static function add($array = null){
+			if (count($array) > 0) {
 
-        if(!is_null($array) && is_array($array) ){
+				self::$array_like = $array;
 
-            if(count($array) > 0){
+				if (count(self::$filter) == 0) {
+					self::$query .= " WHERE ";
+				} else {
+					self::$query .= " AND ";
+				}
 
-                self::$array_field_add = $array;
-                self::$query = "INSERT INTO " . self::$table . " ( ";
+				$count = 0;
+				foreach (self::$array_like as $k => $v) {
 
-                $count = 0;
+					if ($count + 1 == count(self::$array_like)) {
+						self::$query .= $k . " LIKE :field_like_" . $k . " ";
+					} else {
+						self::$query .= $k . " LIKE :field_like_" . $k . "  AND ";
+					}
+					$count += 1;
+				}
+			} else {
 
-                foreach (self::$array_field_add as $k => $v) {
+				echo "ERROR! ->search() params count array " . count($array);
+				die();
 
-                    if( $count + 1 == count(self::$array_field_add) ) {
-                         self::$query .= "`" . $k . "`";
-                    }
-                    else{
-                         self::$query .= "`".$k."`, ";
-                    }
+			}
 
-                    $count += 1;
-                }
+			return new self;
+		}
 
-                self::$query .= " ) VALUES (";
+		public static function pagination($number_page = null, $count_element = null) {
 
-                $count = 0;
+			if (!is_null($number_page) && !is_null($count_element) && is_int($number_page) && is_int($count_element)) {
 
-                foreach (self::$array_field_add  as $k => $v) {
+				self::$number_page = $number_page;
+				self::$count_element = $count_element;
+				self::$query .= " LIMIT :number_page, :count_element ";
 
-                    if( $count + 1 == count(self::$array_field_add) ) {
-                         self::$query .= " :field_add_". $k ." ";
-                    }
-                    else{
-                         self::$query .= " :field_add_". $k ." , ";
-                    }
+			} else {
+				echo "ERROR! ->pagination() invalid arguments!";
+				die();
+			}
 
-                    $count += 1;
-                }
+			return new self;
+		}
 
-                self::$query .= " ) ";
-            }
-        }else{
-            echo "ERROR! invalid arguments ->add()";
-            die();
-        }
+		public static function edit($array_field = null, $array_where = null) {
 
-        return new self;
-    }
+			if (!is_null($array_field) && !is_null($array_where) && is_array($array_field) && is_array($array_where)) {
 
-    public static function delete($array = null){
+				if (count($array_field) > 0 && count($array_where) > 0) {
 
-        if(!is_null($array) && is_array($array) && count($array) > 0){
+					self::$array_where = $array_where;
+					self::$array_field_edit = $array_field;
+					self::$query = "UPDATE " . self::$table . " SET ";
 
-            if( count($array) > 0 ){
+					$count = 0;
 
-                self::$delete = true;
-                self::$query = "DELETE FROM " . self::$table . " WHERE ";
-                self::$array_field_delete = $array;
-                $count = 0;
+					foreach (self::$array_field_edit as $k => $v) {
 
-                foreach (self::$array_field_delete  as $k => $v) {
+						if ($count + 1 == count(self::$array_field_edit)) {
+							self::$query .= $k . " = :field_edit_" . $k . " ";
+						} else {
+							self::$query .= $k . " = :field_edit_" . $k . ", ";
+						}
 
-                    if( $count + 1 == count(self::$array_field_delete) ) {
-                         self::$query .= $k . "= :field_delete_". $k ." ";
-                    }
-                    else{
-                         self::$query .= $k . "= :field_delete_". $k .", ";
-                    }
+						$count += 1;
+					}
 
-                    $count += 1;
-                }
-            }
-        }else{
-            echo "ERROR! invalid arguments ->delete()";
-            die();
-        }
+					self::$query .= " WHERE ";
 
-        return new self;
-    }
+					$count = 0;
 
-    public static function send(){
-        
-        $sth = self::$db->prepare(self::$query);
+					foreach (self::$array_where as $k => $v) {
 
+						if ($count + 1 == count(self::$array_where)) {
+							self::$query .= $k . " = :field_where_" . $k . " ";
+						} else {
+							self::$query .= $k . " = :field_where_" . $k . " AND ";
+						}
 
-        //select  filter
-        if( count(self::$filter) > 0 ){
-            foreach (self::$filter as $k => $v) {
-                $sth->bindValue(":filter_".$k, $v, PDO::PARAM_STR);
-            }
-        }        
+						$count += 1;
+					}
+				}
+			} else {
+				echo "ERROR! ->edit() invalid arguments!";
+				die();
+			}
 
-        //search
-        if( count(self::$array_like) > 0 ){
+			return new self;
+		}
 
-            foreach (self::$array_like as $k => $v) {
-                $sth->bindValue(":field_like_".$k, '%'.$v.'%', PDO::PARAM_STR);
-            }
-        }
+		public static function add($array = null) {
 
-        //edit
-        if( count(self::$array_field_edit) > 0  && count(self::$array_where) > 0 ){
+			if (!is_null($array) && is_array($array)) {
 
-            
-            foreach (self::$array_field_edit as $k => $v) {
-                $sth->bindValue(":field_edit_" . $k, $v);
-            }
-    
-            foreach (self::$array_where as $key => $val) {
-                $sth->bindValue(":field_where_" . $key, $val);
-            }
+				if (count($array) > 0) {
 
-        }
+					self::$array_field_add = $array;
+					self::$query = "INSERT INTO " . self::$table . " ( ";
 
-        //add
-        if( count(self::$array_field_add) > 0 ){
+					$count = 0;
 
-            foreach (self::$array_field_add as $key_add => $val_add) {
-                $sth->bindValue(":field_add_".$key_add, $val_add, PDO::PARAM_STR);
-            }
+					foreach (self::$array_field_add as $k => $v) {
 
-        }
+						if ($count + 1 == count(self::$array_field_add)) {
+							self::$query .= "`" . $k . "`";
+						} else {
+							self::$query .= "`" . $k . "`, ";
+						}
 
-        //delete
-        if( count(self::$array_field_delete) > 0 ){
+						$count += 1;
+					}
 
-            foreach (self::$array_field_delete as $k => $v) {
-                $sth->bindValue(":field_delete_" .$k, $v);
-            }
+					self::$query .= " ) VALUES (";
 
-        }
+					$count = 0;
 
-        //sort
-        if( !empty(self::$sort_field) ){
+					foreach (self::$array_field_add as $k => $v) {
 
-            $sth->bindValue(":sort_field", "id", PDO::PARAM_STR);
-            //$sth->bindParam($count, self::$sort_field);
-        }
+						if ($count + 1 == count(self::$array_field_add)) {
+							self::$query .= " :field_add_" . $k . " ";
+						} else {
+							self::$query .= " :field_add_" . $k . " , ";
+						}
 
-        //pagination
-        if( isset(self::$number_page) && isset(self::$count_element) ){
+						$count += 1;
+					}
 
-            $sth->bindValue(":number_page", self::$number_page, PDO::PARAM_INT);
-            $sth->bindValue(":count_element", self::$count_element, PDO::PARAM_INT);
-            
-        }
+					self::$query .= " ) ";
+				}
+			} else {
+				echo "ERROR! invalid arguments ->add()";
+				die();
+			}
 
-        try{
-            $sth->execute();
+			return new self;
+		}
 
-            //select
-            if(self::$select == true){
+		public static function delete($array = null) {
 
-                self::clearProperty();
-                return $sth->fetchAll(\PDO::FETCH_ASSOC);
+			if (!is_null($array) && is_array($array) && count($array) > 0) {
 
-            }
-            
-            //add or edit
-            if( count(self::$array_field_add) || count(self::$array_field_edit) ){
-                self::clearProperty();
-                return self::$db->lastInsertId();
-            }else if( self::$delete == false){
-                $sth->fetchAll(\PDO::FETCH_ASSOC);
-                self::clearProperty();
-                die();
-            }
-            self::clearProperty();
-        }
-        catch( PDOException $e ){
+				if (count($array) > 0) {
 
-            echo ("Error execute query " . $e->getMessage());
-            $sth->debugDumpParams();
-            self::clearProperty();
-            die();
+					self::$delete = true;
+					self::$query = "DELETE FROM " . self::$table . " WHERE ";
+					self::$array_field_delete = $array;
+					$count = 0;
 
-        }
-    
-    }
+					foreach (self::$array_field_delete as $k => $v) {
 
-    public function getQuery(){
-        echo self::$query;
-        echo "<br><br>";
-        
+						if ($count + 1 == count(self::$array_field_delete)) {
+							self::$query .= $k . "= :field_delete_" . $k . " ";
+						} else {
+							self::$query .= $k . "= :field_delete_" . $k . ", ";
+						}
 
-    }
+						$count += 1;
+					}
+				}
+			} else {
+				echo "ERROR! invalid arguments ->delete()";
+				die();
+			}
 
-    private function setParams(){
+			return new self;
+		}
 
-        $allowed_char = " \t\n\r\0\x0B'";
+		public static function send() {
 
-        if(count($_POST)){
+			$sth = self::$db->prepare(self::$query);
 
-            foreach ($_POST as $k => $v) {
-                if(!empty($v)){
-                    self::$params_url[$k] = trim(filter_input(INPUT_POST, $k), $allowed_char);
-                }
-            }
 
-        }
+			//select  filter
+			if (count(self::$filter) > 0) {
+				foreach (self::$filter as $k => $v) {
+					$sth->bindValue(":filter_" . $k, $v, PDO::PARAM_STR);
+				}
+			}
 
-        if(count($_GET)){
+			//search
+			if (count(self::$array_like) > 0) {
 
-            foreach ($_GET as $k => $v) {
+				foreach (self::$array_like as $k => $v) {
+					$sth->bindValue(":field_like_" . $k, '%' . $v . '%', PDO::PARAM_STR);
+				}
+			}
 
-                if(!empty($v)){
-                    self::$params_url[$k] = trim(filter_input(INPUT_GET, $k), $allowed_char);
-                }
-                
-            }
+			//edit
+			if (count(self::$array_field_edit) > 0 && count(self::$array_where) > 0) {
 
-        }
 
-    }
+				foreach (self::$array_field_edit as $k => $v) {
+					$sth->bindValue(":field_edit_" . $k, $v);
+				}
 
-    /**
-     * @param  [type array $arr]
-     * @return [type array]
-     */
-    private static function siezeJsonToArray($arr){
+				foreach (self::$array_where as $key => $val) {
+					$sth->bindValue(":field_where_" . $key, $val);
+				}
 
-        foreach ($arr as $key => $value) {
-            if(is_array($value)){
-                foreach ($value as $k => $v) {
+			}
 
-                    if(is_string($v)){
+			//add
+			if (count(self::$array_field_add) > 0) {
 
-                        if ( is_object(json_decode($v)) ) { 
+				foreach (self::$array_field_add as $key_add => $val_add) {
+					$sth->bindValue(":field_add_" . $key_add, $val_add, PDO::PARAM_STR);
+				}
 
-                            $arr[$key][$k] = json_decode($v, true);
-            
-                        }
-                    }
-                }
-            } 
-        }
+			}
 
-        return $arr;
-    }
+			//delete
+			if (count(self::$array_field_delete) > 0) {
 
-    private static function clearProperty(){
+				foreach (self::$array_field_delete as $k => $v) {
+					$sth->bindValue(":field_delete_" . $k, $v);
+				}
 
-        self::$select = false;
-        //where
-        self::$field = array();
+			}
 
-        self::$filter = array();
+			//sort
+			if (!empty(self::$sort_field)) {
 
-        //sort
-        self::$sort_field = '';
+				$sth->bindValue(":sort_field", "id", PDO::PARAM_STR);
+				//$sth->bindParam($count, self::$sort_field);
+			}
 
-        self::$sort_type = '';
+			//pagination
+			if (isset(self::$number_page) && isset(self::$count_element)) {
 
-        //pagination
-        self::$count_element = null;
+				$sth->bindValue(":number_page", self::$number_page, PDO::PARAM_INT);
+				$sth->bindValue(":count_element", self::$count_element, PDO::PARAM_INT);
 
-        self::$number_page = null;
+			}
 
-        //add
-        self::$array_field_add = array();
+			try {
+				$sth->execute();
 
-        //edit
-        self::$array_field_edit = array();
+				//select
+				if (self::$select == true) {
 
-        self::$array_where = array();
+					self::clearProperty();
+					return $sth->fetchAll(PDO::FETCH_ASSOC);
 
-        //delete
-        self::$array_field_delete = array();
+				}
 
-        //like
-        self::$array_like = array();
+				//add or edit
+				if (count(self::$array_field_add) || count(self::$array_field_edit)) {
+					self::clearProperty();
+					return self::$db->lastInsertId();
+				} else if (self::$delete == false) {
+					$sth->fetchAll(PDO::FETCH_ASSOC);
+					self::clearProperty();
+					die();
+				}
+				self::clearProperty();
+			} catch (PDOException $e) {
 
-    }
+				echo("Error execute query " . $e->getMessage());
+				$sth->debugDumpParams();
+				self::clearProperty();
+				die();
 
-    private static function isMobile() { 
-        return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
-    }
+			}
 
+		}
 
+		public function getQuery() {
+			echo self::$query;
+			echo "<br><br>";
 
-}
+
+		}
+
+		private function setParams() {
+
+			$allowed_char = " \t\n\r\0\x0B'";
+
+			if (count($_POST)) {
+
+				foreach ($_POST as $k => $v) {
+					if (!empty($v)) {
+						self::$params_url[$k] = trim(filter_input(INPUT_POST, $k), $allowed_char);
+					}
+				}
+
+			}
+
+			if (count($_GET)) {
+
+				foreach ($_GET as $k => $v) {
+
+					if (!empty($v)) {
+						self::$params_url[$k] = trim(filter_input(INPUT_GET, $k), $allowed_char);
+					}
+
+				}
+
+			}
+
+		}
+
+		/**
+		 * @param  [type array $arr]
+		 * @return [type array]
+		 */
+		private static function siezeJsonToArray($arr) {
+
+			foreach ($arr as $key => $value) {
+				if (is_array($value)) {
+					foreach ($value as $k => $v) {
+
+						if (is_string($v)) {
+
+							if (is_object(json_decode($v))) {
+
+								$arr[$key][$k] = json_decode($v, true);
+
+							}
+						}
+					}
+				}
+			}
+
+			return $arr;
+		}
+
+		private static function clearProperty() {
+
+			self::$select = false;
+			//where
+			self::$field = array();
+
+			self::$filter = array();
+
+			//sort
+			self::$sort_field = '';
+
+			self::$sort_type = '';
+
+			//pagination
+			self::$count_element = null;
+
+			self::$number_page = null;
+
+			//add
+			self::$array_field_add = array();
+
+			//edit
+			self::$array_field_edit = array();
+
+			self::$array_where = array();
+
+			//delete
+			self::$array_field_delete = array();
+
+			//like
+			self::$array_like = array();
+
+		}
+
+		private static function isMobile() {
+			return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
+		}
+
+
+	}
 
 ?>

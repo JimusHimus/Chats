@@ -1,69 +1,70 @@
 <?php
- 
-class _Router {
 
-    private $route = [];
+	class _Router {
 
-    function __construct (){ $this->initialization(); }
+		private $route = [];
 
-    private function initialization(){
+		function __construct() {
+			$this->initialization();
+		}
 
-        $this->route = explode('/', URI);
+		private function initialization() {
 
-        if(!empty($this->route[3])){
-            $arr = explode("?", $this->route[3]);
-            $this->route[3] = $arr[0];
-        }
+			$this->route = explode('/', URI);
 
-        if(count($this->route) == 1){
-            if(!empty($this->route[1])){
-                $this->route[1] = strtolower($this->route[1]);
-            }
-        }
+			if (!empty($this->route[3])) {
+				$arr = explode("?", $this->route[3]);
+				$this->route[3] = $arr[0];
+			}
 
-        if( !empty($this->route[1]) ){
+			if (count($this->route) == 1) {
+				if (!empty($this->route[1])) {
+					$this->route[1] = strtolower($this->route[1]);
+				}
+			}
 
-            if($this->route[1] == 'api'){
+			if (!empty($this->route[1])) {
 
-                $path_presenter = ROOT . '/app/presenters/' . ucfirst($this->route[2]) . 'Presenter.php';
+				if ($this->route[1] == 'api') {
 
-                if ( file_exists($path_presenter) ){
-                    
-                    define("PRESENTER", ucfirst($this->route[2]) . 'Presenter');
+					$path_presenter = ROOT . '/app/presenters/' . ucfirst($this->route[2]) . 'Presenter.php';
 
-                    $presenter = ucfirst($this->route[2]) . 'Presenter';
-                    $presenter = new $presenter();
+					if (file_exists($path_presenter)) {
 
-                    if( !empty($this->route[3]) ) {
+						define("PRESENTER", ucfirst($this->route[2]) . 'Presenter');
 
-                        if( method_exists($presenter, $this->route[3]) ){
+						$presenter = ucfirst($this->route[2]) . 'Presenter';
+						$presenter = new $presenter();
 
-                            call_user_func_array(array($presenter, $this->route[3]), array());
+						if (!empty($this->route[3])) {
 
-                        }else{
+							if (method_exists($presenter, $this->route[3])) {
 
-                            echo "ERROR! Not found method  " . $this->route[3] . " in subproject " . $this->route[1];
+								call_user_func_array(array($presenter, $this->route[3]), array());
 
-                        }
-                    }else{
-                        
-                        echo "ERROR! Method empty  ";
-                    }
-                }else{
-                     echo "ERROR! Not found presenter " . $this->route[2];
-                }
-            }
+							} else {
 
-            //
-            //
-            
-        }else{
-            echo "Generation 2 Framework version 2.0";
-        }
-    }
+								echo "ERROR! Not found method  " . $this->route[3] . " in subproject " . $this->route[1];
+
+							}
+						} else {
+
+							echo "ERROR! Method empty  ";
+						}
+					} else {
+						echo "ERROR! Not found presenter " . $this->route[2];
+					}
+				}
+
+				//
+				//
+
+			} else {
+				echo "Generation 2 Framework version 2.0";
+			}
+		}
 
 
-
-}
+	}
 
 ?>

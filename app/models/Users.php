@@ -1,14 +1,13 @@
 <?php
- 
-class Users {
 
+	class Users {
 
-    public function getListUsers(){
-        $result = _MainModel::table("users_cards")->get()->send();
-        
-        _MainModel::viewJSON($result);   
-    }
+		public function getListUsers() {
+			$result = _MainModel::table("users_cards")->get()->send();
 
-}
+			_MainModel::viewJSON($result);
+		}
+
+	}
 
 ?>

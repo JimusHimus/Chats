@@ -1,37 +1,39 @@
 <?php
- 
-class DB {
 
-	public static $db;
-	public static $config = [];
+	class DB {
 
-	function __construct (){ $this->connect(); }
+		public static $db;
+		public static $config = [];
 
-    public function connect () {
+		function __construct() {
+			$this->connect();
+		}
 
-    	require ROOT . "/config.php";
+		public function connect() {
 
-        try {
+			require ROOT . "/config.php";
 
-            self::$db = new PDO('mysql:host=' . self::$config['database']['hostname'] . ';dbname=' . self::$config['database']['dbname'],
-                                self::$config['database']['username'], 
-                                self::$config['database']['password']);
+			try {
 
-            self::$db->query('SET NAMES utf8');
-            self::$db->query('SET CHARACTER_SET utf8_unicode_ci');
-            
-            // TODO: Remove for production
-            self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+				self::$db = new PDO('mysql:host=' . self::$config['database']['hostname'] . ';dbname=' . self::$config['database']['dbname'],
+					self::$config['database']['username'],
+					self::$config['database']['password']);
 
-        } catch (PDOException $e) {
+				self::$db->query('SET NAMES utf8');
+				self::$db->query('SET CHARACTER_SET utf8_unicode_ci');
 
-            echo 'No connection DB: ' . $e->getMessage();
+				// TODO: Remove for production
+				self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        }
+			} catch (PDOException $e) {
 
-    }
+				echo 'No connection DB: ' . $e->getMessage();
+
+			}
+
+		}
 
 
-}
+	}
 
 ?>
