@@ -10,7 +10,10 @@
 	class MainPresenter {
 
 		function __construct() {
-			$r = new ReflectionClass($this);
+			try {
+				$r = new ReflectionClass($this);
+			} catch (ReflectionException $e) {
+			}
 			$name_class = $r->name;
 
 			if ($name_class::$isSecurity) {
@@ -34,6 +37,7 @@
 				echo "Ошибка!";
 			}
 		}
+
 
 	}
 
