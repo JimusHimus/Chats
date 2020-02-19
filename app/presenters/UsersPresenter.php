@@ -12,4 +12,8 @@
 			(new Users())->getUserInfo();
 		}
 
+		public function searchUser() {
+			(new Users())->searchUser();
+		}
+
 	}

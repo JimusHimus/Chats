@@ -2,20 +2,48 @@
 
 	class Users {
 
+		private function requireParams($arr) {
+			if (!is_array($arr))
+				throw new InvalidArgumentException('array required');
+			$keys = array_keys(_MainModel::$params_url);
+			$diff = array_diff($arr, $keys);
+			if (!empty($diff)) {
+				_MainModel::viewJSON(array('error' => implode(', ', $diff) . ' required'));
+				die();
+			}
+		}
+
+		private function checkedInt($key, $default = 0, $arr = null) {
+			if (is_null($arr))
+				$arr = _MainModel::$params_url;
+			if (isset($arr[$key])) {
+				if (!ctype_digit($arr[$key])) {
+					_MainModel::viewJSON(['error' => "invalid $key parameter type; must be int"]);
+					die();
+				}
+				return intval($arr[$key]);
+			}
+			return $default;
+		}
+
 		public function getUsersList() {
-			$start = intval(_MainModel::$params_url['start'] ?? 0);
-			$limit = intval(_MainModel::$params_url['limit'] ?? 10);
-			$result = _MainModel::table('users')->get()->pagination($start, $limit)->send();
+			$page = $this->checkedInt('page');
+			$records = $this->checkedInt('records', 10);
+			$result = _MainModel::table('users')->get()->pagination($page, $records)->send();
 			_MainModel::viewJSON($result);
 		}
 
 		public function getUserInfo() {
-			if (!isset(_MainModel::$params_url['id'])) {
-				_MainModel::viewJSON(['error' => 'id parameter required']);
-				return;
-			}
-			$id = _MainModel::$params_url['id'];
-			$result = _MainModel::table('users')->get()->filter(array('id'=> $id))->send();
+			$this->requireParams(['id']);
+			$id = $this->checkedInt('id');
+			$result = _MainModel::table('users')->get()->filter(array('id' => $id))->send();
+			_MainModel::viewJSON($result);
+		}
+
+		public function searchUser() {
+			$this->requireParams(['login']);
+			$login = $this->checkedInt('login');
+			$result = _MainModel::table('users')->get()->search(array('login' => $login))->send();
 			_MainModel::viewJSON($result);
 		}
 
