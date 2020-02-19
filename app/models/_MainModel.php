@@ -28,6 +28,8 @@
 
 		private static $number_page = null;
 
+		private static $offset = null;
+
 		//add
 		private static $array_field_add = array();
 
@@ -225,11 +227,12 @@
 
 		public static function pagination($number_page = null, $count_element = null) {
 
-			if (!is_null($number_page) && !is_null($count_element) && is_int($number_page) && is_int($count_element)) {
+			if (isset($number_page) && isset($count_element) && is_int($number_page) && is_int($count_element)) {
 
 				self::$number_page = $number_page;
 				self::$count_element = $count_element;
-				self::$query .= " LIMIT :number_page, :count_element ";
+				self::$offset = $count_element * $number_page;
+				self::$query .= " LIMIT :offset, :count_element ";
 
 			} else {
 				echo "ERROR! ->pagination() invalid arguments!";
@@ -422,9 +425,9 @@
 			}
 
 			//pagination
-			if (isset(self::$number_page) && isset(self::$count_element)) {
+			if (isset(self::$offset) && isset(self::$count_element)) {
 
-				$sth->bindValue(":number_page", self::$number_page, PDO::PARAM_INT);
+				$sth->bindValue(":offset", self::$offset, PDO::PARAM_INT);
 				$sth->bindValue(":count_element", self::$count_element, PDO::PARAM_INT);
 
 			}
@@ -472,27 +475,15 @@
 
 			$allowed_char = " \t\n\r\0\x0B'";
 
-			if (count($_POST)) {
-
-				foreach ($_POST as $k => $v) {
-					if (!empty($v)) {
+			if (count($_POST))
+				foreach ($_POST as $k => $v)
+					if (isset($v) && $v !== '')
 						self::$params_url[$k] = trim(filter_input(INPUT_POST, $k), $allowed_char);
-					}
-				}
 
-			}
-
-			if (count($_GET)) {
-
-				foreach ($_GET as $k => $v) {
-
-					if (!empty($v)) {
+			if (count($_GET))
+				foreach ($_GET as $k => $v)
+					if (isset($v) && $v !== '')
 						self::$params_url[$k] = trim(filter_input(INPUT_GET, $k), $allowed_char);
-					}
-
-				}
-
-			}
 
 		}
 
@@ -502,21 +493,12 @@
 		 */
 		private static function siezeJsonToArray($arr) {
 
-			foreach ($arr as $key => $value) {
-				if (is_array($value)) {
-					foreach ($value as $k => $v) {
-
-						if (is_string($v)) {
-
-							if (is_object(json_decode($v))) {
-
+			foreach ($arr as $key => $value)
+				if (is_array($value))
+					foreach ($value as $k => $v)
+						if (is_string($v))
+							if (is_object(json_decode($v)))
 								$arr[$key][$k] = json_decode($v, true);
-
-							}
-						}
-					}
-				}
-			}
 
 			return $arr;
 		}
