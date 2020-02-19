@@ -17,11 +17,12 @@
 			if (is_null($arr))
 				$arr = _MainModel::$params_url;
 			if (isset($arr[$key])) {
-				if (!ctype_digit($arr[$key])) {
+				$val = $arr[$key];
+				if (filter_var($val, FILTER_VALIDATE_INT) === false) {
 					_MainModel::viewJSON(['error' => "invalid $key parameter type; must be int"]);
 					die();
 				}
-				return intval($arr[$key]);
+				return intval($val);
 			}
 			return $default;
 		}
