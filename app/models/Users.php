@@ -43,7 +43,7 @@
 
 		public function searchUser() {
 			$this->requireParams(['login']);
-			$login = $this->checkedInt('login');
+			$login = _MainModel::$params_url['login'];
 			$result = _MainModel::table('users')->get()->search(array('login' => $login))->send();
 			_MainModel::viewJSON($result);
 		}
