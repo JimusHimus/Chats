@@ -48,8 +48,6 @@
 
 			}
 
-			new _MainModel;
-
 		}
 
 
