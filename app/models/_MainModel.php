@@ -229,6 +229,7 @@
 
 			if (isset($number_page) && isset($count_element) && is_int($number_page) && is_int($count_element)) {
 
+				$number_page--;
 				self::$number_page = $number_page;
 				self::$count_element = $count_element;
 				self::$offset = $count_element * $number_page;
@@ -471,20 +472,44 @@
 
 		}
 
+		public static function is_var($key) {
+			if (array_key_exists($key, self::$params_url)) {
+
+				if (self::$params_url[$key] != '') {
+
+					return true;
+
+				} else
+					return false;
+
+			} else
+				return false;
+		}
+
 		private function setParams() {
 
 			$allowed_char = " \t\n\r\0\x0B'";
 
-			if (count($_POST))
-				foreach ($_POST as $k => $v)
-					if (isset($v) && $v !== '')
+			if (count($_POST)) {
+
+				foreach ($_POST as $k => $v) {
+					if (isset($v)) {
 						self::$params_url[$k] = trim(filter_input(INPUT_POST, $k), $allowed_char);
+					}
+				}
 
-			if (count($_GET))
-				foreach ($_GET as $k => $v)
-					if (isset($v) && $v !== '')
+			}
+
+			if (count($_GET)) {
+
+				foreach ($_GET as $k => $v) {
+
+					if (isset($v)) {
 						self::$params_url[$k] = trim(filter_input(INPUT_GET, $k), $allowed_char);
+					}
 
+				}
+			}
 		}
 
 		/**
