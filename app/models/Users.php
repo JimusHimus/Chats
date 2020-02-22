@@ -28,7 +28,7 @@
 		}
 
 		public function getUsersList() {
-			$page = $this->checkedInt('page');
+			$page = $this->checkedInt('page', 1);
 			$records = $this->checkedInt('records', 10);
 			$result = self::table('users')->get()->pagination($page, $records)->send();
 			self::viewJSON($result);
@@ -42,9 +42,12 @@
 		}
 
 		public function searchUser() {
-			$this->requireParams(['login']);
-			$login = self::$params_url['login'];
-			$result = self::table('users')->get()->search(array('login' => $login))->send();
+			$result = self::table('users')->get();
+			if (self::is_var('login'))
+				$result = $result->search(array('login' => self::$params_url['login']));
+			$page = $this->checkedInt('page', 1);
+			$records = $this->checkedInt('records', 10);
+			$result = $result->pagination($page, $records)->send();
 			self::viewJSON($result);
 		}
 
