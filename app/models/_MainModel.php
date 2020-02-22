@@ -468,8 +468,6 @@
 		public function getQuery() {
 			echo self::$query;
 			echo "<br><br>";
-
-
 		}
 
 		public static function is_var($key) {
