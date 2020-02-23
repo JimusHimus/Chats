@@ -51,6 +51,31 @@
 			$this->setParams();
 		}
 
+		public function requireParams($arr) {
+			if (!is_array($arr))
+				throw new InvalidArgumentException('array required');
+			$keys = array_keys(self::$params_url);
+			$diff = array_diff($arr, $keys);
+			if (!empty($diff)) {
+				self::viewJSON(array('error' => implode(', ', $diff) . ' required'));
+				die();
+			}
+		}
+
+		public function checkedInt($key, $default = 0, $arr = null) {
+			if (is_null($arr))
+				$arr = self::$params_url;
+			if (isset($arr[$key])) {
+				$val = $arr[$key];
+				if (filter_var($val, FILTER_VALIDATE_INT) === false) {
+					self::viewJSON(['error' => "invalid $key parameter type; must be int"]);
+					die();
+				}
+				return intval($val);
+			}
+			return $default;
+		}
+
 		public static function viewJSON($json = null) {
 
 			if (!is_null($json)) {
